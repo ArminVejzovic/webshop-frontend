@@ -1,83 +1,136 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import HomeProducts from '../components/HomeArticles';
 
 function AdminDashboard() {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('home');
+  const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login');
   };
 
+  const menuItems = [
+    { key: 'home', label: 'Home' },
+    { key: 'add-article', label: 'Add New Article' },
+    { key: 'orders', label: 'Orders' },
+    { key: 'settings', label: 'Settings' },
+  ];
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gray-100 p-8 flex flex-col">
+    <div className="min-h-screen bg-gray-100 p-4 md:p-8 flex flex-col">
       <nav className="bg-white shadow-md rounded-xl p-4 flex justify-between items-center mb-8">
-        <div className="flex space-x-6">
+        <div className="hidden md:flex space-x-6">
+          {menuItems.map((item) => (
+            <button
+              key={item.key}
+              onClick={() => setActiveSection(item.key)}
+              className={`cursor-pointer text-gray-700 font-semibold transition hover:text-indigo-600
+                ${activeSection === item.key ? 'underline decoration-indigo-600 underline-offset-4' : ''}
+              `}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="md:hidden relative" ref={dropdownRef}>
           <button
-            onClick={() => setActiveSection('home')}
-            className={`cursor-pointer text-gray-700 font-semibold transition hover:text-indigo-600
-              ${activeSection === 'home' ? 'underline decoration-indigo-600 underline-offset-4' : ''}
-            `}
+            onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}
+            className="cursor-pointer"
           >
-            Home
+            <svg
+              className="w-6 h-6 text-gray-700"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d={
+                  isMobileMenuOpen
+                    ? 'M6 18L18 6M6 6l12 12'
+                    : 'M4 6h16M4 12h16M4 18h16'
+                }
+              />
+            </svg>
           </button>
 
-          <button
-            onClick={() => setActiveSection('settings')}
-            className={`cursor-pointer text-gray-700 font-semibold transition hover:text-indigo-600
-              ${activeSection === 'settings' ? 'underline decoration-indigo-600 underline-offset-4' : ''}
-            `}
-          >
-            Settings
-          </button>
+          {isMobileMenuOpen && (
+            <div className="absolute mt-2 bg-white shadow-lg rounded-xl p-4 z-50 space-y-2 w-40">
+              {menuItems.map((item) => (
+                <button
+                  key={item.key}
+                  onClick={() => {
+                    setActiveSection(item.key);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`block w-full text-left font-medium transition ${
+                    activeSection === item.key
+                      ? 'text-indigo-600 underline underline-offset-4'
+                      : 'text-gray-700 hover:text-indigo-600'
+                  } cursor-pointer`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <button
           onClick={handleLogout}
-          className="bg-red-600 hover:bg-red-700 text-white py-2 px-5 rounded-xl transition cursor-pointer"
+          className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-xl transition cursor-pointer text-sm"
         >
           Logout
         </button>
       </nav>
 
-      <div className="max-w-4xl mx-auto bg-white shadow-md rounded-2xl p-8 flex-grow">
+      <div className="max-w-4xl mx-auto bg-white shadow-md rounded-2xl p-6 flex-grow w-full">
         {activeSection === 'home' && (
-          <div className="home">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Admin Dashboard - Početna</h1>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">
+              Home
+            </h1>
             <p className="text-gray-600 mb-6">Welcome, admin!</p>
+            <p className="text-2xl pb-4  font-bold text-center text-gray-600">Articles</p>
+            <HomeProducts />
+          </div>
+        )}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <button
-                onClick={() => alert('Articles page coming soon!')}
-                className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl transition cursor-pointer"
-              >
-                Get Articles
-              </button>
+        {activeSection === 'add-article' && (
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">Add New Article</h1>
+            <p className="text-gray-600">Product input form goes here.</p>
+          </div>
+        )}
 
-              <button
-                onClick={() => alert('Articles page coming soon!')}
-                className="bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-xl transition cursor-pointer"
-              >
-                Post Articles
-              </button>
-
-              <button
-                onClick={() => alert('Orders page coming soon!')}
-                className="bg-yellow-500 hover:bg-yellow-600 text-white py-3 px-4 rounded-xl transition cursor-pointer"
-              >
-                Get Orders
-              </button>
-            </div>
+        {activeSection === 'orders' && (
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">Orders</h1>
+            <p className="text-gray-600">Order list goes here.</p>
           </div>
         )}
 
         {activeSection === 'settings' && (
-          <div className="settings">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Settings</h1>
-            <p className="text-gray-600 mb-6">
-              here you can configure
-            </p>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">Settings</h1>
+            <p className="text-gray-600">Here you can change your settigs.</p>
           </div>
         )}
       </div>
