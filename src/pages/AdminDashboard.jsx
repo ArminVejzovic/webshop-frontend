@@ -1,17 +1,25 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import HomeProducts from '../components/HomeArticles';
+import AddArticleForm from '../components/AddArticleForm';
 
 function AdminDashboard() {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('home');
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const location = useLocation();
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login');
   };
+
+  useEffect(() => {
+    if (location.state?.section) {
+      setActiveSection(location.state.section);
+    }
+  }, [location.state]);
 
   const menuItems = [
     { key: 'home', label: 'Home' },
@@ -117,6 +125,7 @@ function AdminDashboard() {
           <div>
             <h1 className="text-2xl font-bold text-gray-800 mb-4">Add New Article</h1>
             <p className="text-gray-600">Product input form goes here.</p>
+            <AddArticleForm />
           </div>
         )}
 
