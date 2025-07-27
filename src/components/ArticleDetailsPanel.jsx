@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL_ARTICLES;
 
 export default function ArticleDetailsPanel({ article, onClose, onUpdate }) {
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState({ ...article });
 
-  // close on outside click
   useEffect(() => {
     const handleOutside = (e) => {
       if (e.target.id === "modal-overlay") onClose();
