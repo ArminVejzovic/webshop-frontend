@@ -4,13 +4,15 @@ import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const AddProductForm = () => {
+const AddArticleForm = () => {
   const [form, setForm] = useState({
     name: "",
     description: "",
     price: "",
+    quantity: "",
     image_url: "",
   });
+
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -25,7 +27,7 @@ const AddProductForm = () => {
         name: form.name,
         description: form.description,
         price: parseFloat(form.price),
-        quantity: 1,
+        quantity: parseInt(form.quantity),
         image_url: form.image_url,
         created_at: new Date().toISOString(),
       };
@@ -42,7 +44,7 @@ const AddProductForm = () => {
 
   return (
     <div className="max-w-md mx-auto p-4 bg-white rounded-lg shadow-md">
-      <h2 className="text-xl font-bold mb-4">Add New Product</h2>
+      <h2 className="text-xl font-bold mb-4">Add New Article</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block mb-1 font-medium">
@@ -85,6 +87,20 @@ const AddProductForm = () => {
         </div>
         <div>
           <label className="block mb-1 font-medium">
+            Quantity: <span className="text-red-600">*</span>
+          </label>
+          <input
+            type="number"
+            name="quantity"
+            min="1"
+            value={form.quantity}
+            onChange={handleChange}
+            required
+            className="w-full border rounded px-3 py-2"
+          />
+        </div>
+        <div>
+          <label className="block mb-1 font-medium">
             Image URL: <span className="text-gray-500 text-sm">(optional)</span>
           </label>
           <input
@@ -103,13 +119,13 @@ const AddProductForm = () => {
 
         <button
           type="submit"
-          className="bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition"
+          className="bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition cursor-pointer"
         >
-          Add Product
+          Add Article
         </button>
       </form>
     </div>
   );
 };
 
-export default AddProductForm;
+export default AddArticleForm;

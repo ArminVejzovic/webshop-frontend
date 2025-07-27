@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import HomeProducts from '../components/HomeArticles';
+import HomeArticles from '../components/HomeArticles';
 import AddArticleForm from '../components/AddArticleForm';
 
 function AdminDashboard() {
@@ -117,7 +117,7 @@ function AdminDashboard() {
             </h1>
             <p className="text-gray-600 mb-6">Welcome, admin!</p>
             <p className="text-2xl pb-4  font-bold text-center text-gray-600">Articles</p>
-            <HomeProducts />
+            <HomeArticles />
           </div>
         )}
 

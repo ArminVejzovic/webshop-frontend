@@ -1,24 +1,26 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import ArticleDetailsPanel from "../components/ArticleDetailsPanel";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export default function HomeProducts() {
-  const [products, setProducts] = useState([]);
+export default function HomeArticles() {
+  const [articles, setArticles] = useState([]);
   const [filter, setFilter] = useState({ name: '', price: '', quantity: '' });
   const [sortAsc, setSortAsc] = useState(false);
+  const [selectedArticle, setSelectedArticle] = useState(null);
 
   useEffect(() => {
   axios.get(API_URL)
     .then(res => {
-      setProducts(res.data);
+      setArticles(res.data);
     })
     .catch(err => {
-      console.error('Error fetching products:', err);
+      console.error('Error fetching articles:', err);
     });
 }, []);
 
-  const filtered = products
+  const filtered = articles
   .filter(p => typeof p.name === 'string' && p.name.toLowerCase().includes(filter.name.toLowerCase()))
   .filter(p => filter.price ? p.price.toString().includes(filter.price) : true)
   .filter(p => filter.quantity ? p.quantity.toString().includes(filter.quantity) : true)
@@ -69,7 +71,11 @@ export default function HomeProducts() {
         </thead>
         <tbody>
           {filtered.map(p => (
-            <tr key={p.id} className="hover:bg-gray-50">
+            <tr
+							key={p.id}
+							className="hover:bg-gray-200 cursor-pointer"
+							onClick={() => setSelectedArticle(p)}
+							>
               <td className="border p-2 w-24">
                  {p.image_url ? (
                     <img src={p.image_url} alt={p.name} className="h-30 mx-auto object-contain" />
@@ -98,6 +104,28 @@ export default function HomeProducts() {
           ))}
         </tbody>
       </table>
+			
+			{selectedArticle && (
+				<ArticleDetailsPanel
+					article={selectedArticle}
+					onClose={() => setSelectedArticle(null)}
+					onUpdate={(updated) => {
+						if (updated) {
+							setArticles((prev) =>
+								prev.map((p) => (p.id === updated.id ? updated : p))
+							);
+							setSelectedArticle(updated);
+						} else {
+							setArticles((prev) =>
+								prev.filter((p) => p.id !== selectedArticle.id)
+							);
+							setSelectedArticle(null);
+						}
+					}}
+				/>
+			)}
+
+			
     </div>
   );
 }
