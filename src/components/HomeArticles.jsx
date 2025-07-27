@@ -75,6 +75,7 @@ export default function HomeArticles() {
         <table className="min-w-full text-sm text-left">
           <thead className="bg-gray-100 text-gray-700">
             <tr>
+              <th className="px-4 py-2">#</th>
               <th className="px-4 py-2">Image</th>
               <th className="px-4 py-2">Name</th>
               <th className="px-4 py-2">Price</th>
@@ -89,6 +90,7 @@ export default function HomeArticles() {
                 className="border-t hover:bg-gray-200 cursor-pointer"
                 onClick={() => setSelectedArticle(p)}
               >
+                <td className="px-4 py-2">{p.id}</td>
                 <td className="px-4 py-2 w-24">
                   {p.image_url ? (
                     <img src={p.image_url} alt={p.name} className="h-16 w-full object-contain mx-auto" />

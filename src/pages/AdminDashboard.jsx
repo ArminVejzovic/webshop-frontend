@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import HomeArticles from '../components/HomeArticles';
 import AddArticleForm from '../components/AddArticleForm';
+import OrdersList from '../components/OrdersList';
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -132,7 +133,7 @@ function AdminDashboard() {
         {activeSection === 'orders' && (
           <div>
             <h1 className="text-2xl font-bold text-gray-800 mb-4">Orders</h1>
-            <p className="text-gray-600">Order list goes here.</p>
+            <OrdersList />
           </div>
         )}
 
