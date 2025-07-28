@@ -4,6 +4,8 @@ import Landing from './pages/Landing';
 import Login from './pages/Login';
 import PrivateRoute from './components/PrivateRoute';
 import AdminDashboard from './pages/AdminDashboard';
+import WebshopGuestDashboard from './pages/WebshopGuestDashboard';
+
 
 function App() {
 
@@ -18,6 +20,7 @@ function App() {
               <AdminDashboard />
             </PrivateRoute>
           } />
+          <Route path="/webshop-guest-dashboard" element={<WebshopGuestDashboard />} />
         </Routes>
     </BrowserRouter>
     </>

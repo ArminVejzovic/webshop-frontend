@@ -19,7 +19,7 @@ function Landing() {
         </button>
 
         <button
-          onClick={() => alert('Guest feature coming soon!')}
+          onClick={() => navigate('/webshop-guest-dashboard')}
           className="flex-1 min-w-[150px] bg-green-400 hover:bg-green-500 text-gray-900 font-semibold py-3 rounded-lg shadow-lg transition-colors duration-300"
         >
           Login as Webshop Guest
