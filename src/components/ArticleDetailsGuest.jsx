@@ -19,6 +19,20 @@ const ArticleDetailsGuest = ({ article, onClose }) => {
 
   if (!article) return null;
 
+  const addToCart = (e) => {
+    e.stopPropagation();
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const index = cart.findIndex(item => item.id === article.id);
+    if (index >= 0) {
+        cart[index].quantity += 1;
+    } else {
+        cart.push({ id: article.id, name: article.name, price: article.price, quantity: 1 });
+    }
+    localStorage.setItem("cart", JSON.stringify(cart));
+    window.dispatchEvent(new Event("storage"));
+  };
+
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
       <div
@@ -53,8 +67,9 @@ const ArticleDetailsGuest = ({ article, onClose }) => {
           <span className="text-sm text-gray-600">In stock: {article.quantity}</span>
         </div>
 
-        <button
-          className="mt-6 w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded"
+       <button
+          className="text-sm px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 cursor-pointer"
+          onClick={addToCart}
         >
           Add to Cart
         </button>
