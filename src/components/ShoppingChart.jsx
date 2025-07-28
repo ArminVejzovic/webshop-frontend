@@ -105,30 +105,40 @@ const ShoppingCart = () => {
             <p className="text-gray-600">Shopping chart is empty</p>
           ) : (
             <>
-              {cart.map(item => (
-                <div key={item.id} className="border-b py-2 flex justify-between items-center">
-                    <div>
-                    <p className="font-semibold">{item.name}</p>
-                    <p className="text-sm text-gray-600">
-                        ${item.price} × {item.quantity} = ${(item.price * item.quantity).toFixed(2)}
-                    </p>
+              <ul className="divide-y divide-gray-200">
+                {cart.map((item) => (
+                  <li key={item.id} className="py-3">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="font-semibold">{item.name}</p>
+                        <p className="text-sm text-gray-600">
+                          Price per piece: ${item.price.toFixed(2)}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Quantity: {item.quantity}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold">
+                          Total: ${(item.price * item.quantity).toFixed(2)}
+                        </p>
+                        <div className="flex items-center gap-2 justify-end mt-1">
+                          <button onClick={() => handleQuantity(item.id, -1)} className="px-2">−</button>
+                          <button onClick={() => handleQuantity(item.id, 1)} className="px-2">+</button>
+                          <TrashIcon
+                            className="h-5 w-5 text-red-500 cursor-pointer"
+                            onClick={() => handleRemove(item.id)}
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                    <button onClick={() => handleQuantity(item.id, -1)} className="px-2">−</button>
-                    <button onClick={() => handleQuantity(item.id, 1)} className="px-2">+</button>
-                    <TrashIcon
-                        className="h-5 w-5 text-red-500 cursor-pointer"
-                        onClick={() => handleRemove(item.id)}
-                    />
-                    </div>
-                </div>
+                  </li>
                 ))}
+              </ul>
 
-                <div className="mt-4 mb-6 text-right">
-                <p className="text-lg font-semibold">
-                    Total: <span className="text-green-700">${totalPrice.toFixed(2)}</span>
-                </p>
-            </div>
+              <div className="mt-4 mb-6 text-right text-lg font-bold text-green-700">
+                Total: ${totalPrice.toFixed(2)}
+              </div>
 
               <div className="mt-4">
                 <h3 className="font-bold mb-2">Customer Information:</h3>
