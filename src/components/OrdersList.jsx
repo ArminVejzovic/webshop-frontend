@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import OrderDetailsPanel from '../components/OrderDetailsPanel';
 
 const API_URL = import.meta.env.VITE_API_URL_ORDERS;
 const PAGE_SIZE = 5;
@@ -8,6 +9,7 @@ export default function OrdersList() {
   const [orders, setOrders] = useState([]);
   const [sortAsc, setSortAsc] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   useEffect(() => {
     axios.get(API_URL)
@@ -27,8 +29,28 @@ export default function OrdersList() {
     currentPage * PAGE_SIZE
   );
 
+  const handleSelectOrder = (order) => {
+    const itemIds = order.items.split(',').map(id => id.trim());
+
+    const mockItems = itemIds.map((id) => ({
+      id,
+      name: `Artikal #${id}`,
+      quantity: 1,
+      price: 9.99,
+    }));
+
+    setSelectedOrder({
+      ...order,
+      customer_name: `${order.customer_firstname} ${order.customer_lastname}`,
+      restaurant_name: 'Demo restoran',
+      payment_method: 'Cash',
+      delivery_time: null,
+      items: mockItems,
+    });
+  };
+
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto px-4">
       <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
         <h2 className="text-xl font-bold text-gray-800">Order List</h2>
         <button
@@ -53,8 +75,12 @@ export default function OrdersList() {
           </tr>
         </thead>
         <tbody>
-          {paginatedOrders.map((order, i) => (
-            <tr key={order.id} className="hover:bg-gray-50">
+          {paginatedOrders.map((order) => (
+            <tr
+              key={order.id}
+              className="hover:bg-gray-200 cursor-pointer"
+              onClick={() => handleSelectOrder(order)}
+            >
               <td className="border px-2 py-1 text-center">{order.id}</td>
               <td className="border px-2 py-1">{order.customer_firstname} {order.customer_lastname}</td>
               <td className="border px-2 py-1">{order.customer_email}</td>
@@ -87,6 +113,21 @@ export default function OrdersList() {
           Next
         </button>
       </div>
+
+      {selectedOrder && (
+        <OrderDetailsPanel
+          order={selectedOrder}
+          onClose={() => setSelectedOrder(null)}
+          onUpdate={(updated) => {
+            if (updated) {
+              setOrders((prev) =>
+                prev.map((o) => (o.id === updated.id ? updated : o))
+              );
+              setSelectedOrder(updated);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
