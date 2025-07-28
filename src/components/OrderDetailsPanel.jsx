@@ -5,6 +5,7 @@ const API_URL = import.meta.env.VITE_API_URL_ORDERS;
 
 export default function OrderDetailsPanel({ order, onClose, onUpdate }) {
   const [status, setStatus] = useState(order.status);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     const handleOutside = (e) => {
@@ -14,12 +15,36 @@ export default function OrderDetailsPanel({ order, onClose, onUpdate }) {
     return () => window.removeEventListener("click", handleOutside);
   }, [onClose]);
 
+  useEffect(() => {
+    if (order.items && order.items.length > 0) {
+      const totalPrice = order.items.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+      );
+      setTotal(totalPrice);
+    }
+  }, [order.items]);
+
   const handleStatusChange = async (newStatus) => {
     try {
-      const updatedOrder = { ...order, status: newStatus };
+      const updatedOrder = {
+        id: order.id,
+        items: typeof order.items === "string"
+          ? order.items
+          : order.items.map(i => i.id).join(', '),
+        status: newStatus,
+        created_at: order.created_at,
+        customer_email: order.customer_email,
+        customer_phone: order.customer_phone,
+        customer_address: order.customer_address,
+        customer_lastname: order.customer_lastname,
+        customer_firstname: order.customer_firstname,
+        processed_at: new Date().toISOString()
+      };
+
       await axios.put(`${API_URL}/${order.id}`, updatedOrder);
       setStatus(newStatus);
-      onUpdate(updatedOrder);
+      onUpdate({ ...order, status: newStatus });
     } catch (err) {
       console.error("Error updating order status:", err);
     }
@@ -40,44 +65,80 @@ export default function OrderDetailsPanel({ order, onClose, onUpdate }) {
 
         <h2 className="text-2xl font-bold mb-4">Order Details</h2>
 
-        <p className="mb-2"><strong>Customer:</strong> {order.customer_name || "N/A"}</p>
-        <p className="mb-2"><strong>Restaurant:</strong> {order.restaurant_name || "N/A"}</p>
-        <p className="mb-2"><strong>Status:</strong> <span className="font-semibold">{status}</span></p>
-        <p className="mb-2"><strong>Payment Method:</strong> {order.payment_method || "N/A"}</p>
-        <p className="mb-2"><strong>Delivery Time:</strong> {order.delivery_time ? new Date(order.delivery_time).toLocaleString() : "N/A"}</p>
-        <p className="mb-4"><strong>Created At:</strong> {new Date(order.created_at).toLocaleString()}</p>
+        <div className="order-details">
+          <p className="mb-2">
+            <strong>Customer:</strong>{" "}
+            {order.customer_firstname && order.customer_lastname
+              ? `${order.customer_firstname} ${order.customer_lastname}`
+              : "Unknown"}
+          </p>
+          <p className="mb-2">
+            <strong>Status:</strong>{" "}
+            <span className="font-semibold">{order.status || "Unknown"}</span>
+          </p>
+          <p className="mb-2">
+            <strong>Created At:</strong>{" "}
+            {order.created_at
+              ? new Date(order.created_at).toLocaleString()
+              : "Unknown"}
+          </p>
+          <p className="mb-2">
+            <strong>Email:</strong>{" "}
+            {order.customer_email || "Unknown"}
+          </p>
+          <p className="mb-2">
+            <strong>Phone:</strong>{" "}
+            {order.customer_phone || "Unknown"}
+          </p>
+          <p className="mb-2">
+            <strong>Address:</strong>{" "}
+            {order.customer_address || "Unknown"}
+          </p>
+        </div>
 
         {order.items && order.items.length > 0 && (
           <div className="mb-4">
-            <h3 className="text-lg font-semibold mb-2">Items:</h3>
-            <ul className="list-disc pl-5">
+            <h3 className="text-lg font-semibold mb-2">Articles:</h3>
+            <ul className="divide-y divide-gray-200">
               {order.items.map((item, index) => (
-                <li key={index}>
-                  {item.name} x {item.quantity} — ${item.price}
+                <li key={index} className="py-2">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-semibold">{item.name}</p>
+                      <p className="text-sm text-gray-600">Amount: {item.quantity}</p>
+                      <p className="text-sm text-gray-600">Price per piece: ${item.price.toFixed(2)}</p>
+                    </div>
+                    <div className="text-right font-semibold">
+                      ${ (item.quantity * item.price).toFixed(2) }
+                    </div>
+                  </div>
                 </li>
               ))}
             </ul>
+            <div className="mt-4 text-right text-lg font-bold text-green-700">
+              Total: ${total.toFixed(2)}
+            </div>
           </div>
         )}
 
-        <div className="flex flex-wrap gap-2 mt-4">
+        <div className="flex flex-wrap gap-2 mt-6">
           <button
-            onClick={() => handleStatusChange("U PRIPREMI")}
+            onClick={() => handleStatusChange("Accepted")}
             className="bg-yellow-500 text-white py-2 px-4 rounded hover:bg-yellow-600"
           >
-            Prihvati (U pripremi)
+            Accept (In prepraration)
           </button>
           <button
-            onClick={() => handleStatusChange("ODBIJENO")}
+            onClick={() => handleStatusChange("Rejected")}
             className="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700"
           >
-            Odbij
+            Reject
           </button>
           <button
-            onClick={() => handleStatusChange("ZAVRSENO")}
+            onClick={() => handleStatusChange("Finished")}
             className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
           >
-            Završeno
+            Finish
           </button>
         </div>
       </div>

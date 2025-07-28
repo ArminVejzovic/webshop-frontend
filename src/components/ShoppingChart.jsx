@@ -61,14 +61,14 @@ const ShoppingCart = () => {
         body: JSON.stringify(order),
       });
 
-      if (!res.ok) throw new Error("Greška prilikom slanja narudžbe.");
+      if (!res.ok) throw new Error("Error sending order.");
 
-      alert("Narudžba uspješno poslana!");
+      alert("Order successfully sent. Thank you!");
       handleClear();
       setIsOpen(false);
     } catch (err) {
       console.error("Greška:", err);
-      alert("Došlo je do greške. Pokušajte ponovo.");
+      alert("An error occurred. Please try again.");
     }
   };
 
@@ -95,14 +95,14 @@ const ShoppingCart = () => {
       {isOpen && (
         <div className="fixed top-0 right-0 w-full sm:w-[400px] h-full bg-white shadow-lg z-50 p-4 overflow-y-auto">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Košarica</h2>
+            <h2 className="text-xl font-semibold">Shopping Chart</h2>
             <button onClick={() => setIsOpen(false)}>
               <XMarkIcon className="h-6 w-6 text-gray-800 cursor-pointer" />
             </button>
           </div>
 
           {cart.length === 0 ? (
-            <p className="text-gray-600">Košarica je prazna.</p>
+            <p className="text-gray-600">Shopping chart is empty</p>
           ) : (
             <>
               {cart.map(item => (
@@ -126,24 +126,24 @@ const ShoppingCart = () => {
 
                 <div className="mt-4 mb-6 text-right">
                 <p className="text-lg font-semibold">
-                    Ukupno: <span className="text-green-700">${totalPrice.toFixed(2)}</span>
+                    Total: <span className="text-green-700">${totalPrice.toFixed(2)}</span>
                 </p>
             </div>
 
               <div className="mt-4">
-                <h3 className="font-bold mb-2">Podaci o kupcu</h3>
+                <h3 className="font-bold mb-2">Customer Information:</h3>
                 <input
                   name="firstName"
                   value={form.firstName}
                   onChange={handleChange}
-                  placeholder="Ime"
+                  placeholder="First Name"
                   className="border p-2 w-full mb-2"
                 />
                 <input
                   name="lastName"
                   value={form.lastName}
                   onChange={handleChange}
-                  placeholder="Prezime"
+                  placeholder="Last Name"
                   className="border p-2 w-full mb-2"
                 />
                 <input
@@ -157,14 +157,14 @@ const ShoppingCart = () => {
                   name="phone"
                   value={form.phone}
                   onChange={handleChange}
-                  placeholder="Telefon"
+                  placeholder="Phone"
                   className="border p-2 w-full mb-2"
                 />
                 <input
                   name="address"
                   value={form.address}
                   onChange={handleChange}
-                  placeholder="Adresa"
+                  placeholder="Address"
                   className="border p-2 w-full mb-4"
                 />
 
@@ -172,13 +172,13 @@ const ShoppingCart = () => {
                   onClick={handleOrderSubmit}
                   className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded"
                 >
-                  Pošalji narudžbu
+                  Submit order
                 </button>
                 <button
                   onClick={handleClear}
                   className="w-full mt-2 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded"
                 >
-                  Očisti košaricu
+                  Clear chart
                 </button>
               </div>
             </>

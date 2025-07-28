@@ -71,54 +71,43 @@ export default function HomeArticles() {
         </div>
       )}
 
-      <div className="overflow-x-auto bg-white shadow-md rounded">
-        <table className="min-w-full text-sm text-left">
-          <thead className="bg-gray-100 text-gray-700">
-            <tr>
-              <th className="px-4 py-2">#</th>
-              <th className="px-4 py-2">Image</th>
-              <th className="px-4 py-2">Name</th>
-              <th className="px-4 py-2">Price</th>
-              <th className="px-4 py-2">Quantity</th>
-              <th className="px-4 py-2">Created At</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map(p => (
-              <tr
-                key={p.id}
-                className="border-t hover:bg-gray-200 cursor-pointer"
-                onClick={() => setSelectedArticle(p)}
-              >
-                <td className="px-4 py-2">{p.id}</td>
-                <td className="px-4 py-2 w-24">
-                  {p.image_url ? (
-                    <img src={p.image_url} alt={p.name} className="h-16 w-full object-contain mx-auto" />
-                  ) : (
-                    <div className="bg-gray-200 h-16 flex items-center justify-center text-gray-500 text-xs">
-                      No Image
-                    </div>
-                  )}
-                </td>
-                <td className="px-4 py-2">{p.name}</td>
-                <td className="px-4 py-2">{p.price} $</td>
-                <td className="px-4 py-2">{p.quantity}</td>
-                <td className="px-4 py-2">
-                  {p.created_at
-                    ? new Date(p.created_at).toLocaleString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "2-digit",
-                        hour: "numeric",
-                        minute: "2-digit",
-                        hour12: true,
-                      })
-                    : "N/A"}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+        {filtered.map(p => (
+          <div
+            key={p.id}
+            className="border rounded-lg shadow hover:shadow-md transition duration-300 cursor-pointer flex flex-col"
+            onClick={() => setSelectedArticle(p)}
+          >
+            {p.image_url ? (
+              <img
+                src={p.image_url}
+                alt={p.name}
+                className="h-48 w-full object-cover rounded-t-lg"
+              />
+            ) : (
+              <div className="h-48 w-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm rounded-t-lg">
+                No Image
+              </div>
+            )}
+            <div className="p-4 flex flex-col gap-2">
+              <h2 className="text-lg font-semibold">{p.name}</h2>
+              <p className="text-gray-700 text-sm">Price: {p.price} $</p>
+              <p className="text-gray-700 text-sm">In Stock: {p.quantity}</p>
+              <p className="text-gray-400 text-xs">
+                {p.created_at
+                  ? new Date(p.created_at).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "2-digit",
+                      hour: "numeric",
+                      minute: "2-digit",
+                      hour12: true,
+                    })
+                  : "N/A"}
+              </p>
+            </div>
+          </div>
+        ))}
       </div>
 
       {selectedArticle && (
