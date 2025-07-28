@@ -13,12 +13,24 @@ function AdminDashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('adminActiveSection');
     navigate('/login');
+  };
+
+  const handleSectionChange = (sectionKey) => {
+    setActiveSection(sectionKey);
+    localStorage.setItem('adminActiveSection', sectionKey);
   };
 
   useEffect(() => {
     if (location.state?.section) {
       setActiveSection(location.state.section);
+      localStorage.setItem('adminActiveSection', location.state.section);
+    } else {
+      const storedSection = localStorage.getItem('adminActiveSection');
+      if (storedSection) {
+        setActiveSection(storedSection);
+      }
     }
   }, [location.state]);
 
@@ -46,7 +58,7 @@ function AdminDashboard() {
           {menuItems.map((item) => (
             <button
               key={item.key}
-              onClick={() => setActiveSection(item.key)}
+              onClick={() => handleSectionChange(item.key)}
               className={`cursor-pointer text-gray-700 font-semibold transition hover:text-indigo-600
                 ${activeSection === item.key ? 'underline decoration-indigo-600 underline-offset-4' : ''}
               `}
@@ -86,7 +98,7 @@ function AdminDashboard() {
                 <button
                   key={item.key}
                   onClick={() => {
-                    setActiveSection(item.key);
+                    handleSectionChange(item.key)
                     setMobileMenuOpen(false);
                   }}
                   className={`block w-full text-left font-medium transition ${
