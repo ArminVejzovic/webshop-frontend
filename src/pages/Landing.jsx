@@ -13,14 +13,14 @@ function Landing() {
       <div className="flex flex-wrap gap-6 justify-center max-w-md w-full">
         <button
           onClick={() => navigate('/login')}
-          className="flex-1 min-w-[150px] bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold py-3 rounded-lg shadow-lg transition-colors duration-300"
+          className="flex-1 min-w-[150px] bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold py-3 rounded-lg shadow-lg transition-colors duration-300 cursor-pointer"
         >
           Login as Admin
         </button>
 
         <button
           onClick={() => navigate('/webshop-guest-dashboard')}
-          className="flex-1 min-w-[150px] bg-green-400 hover:bg-green-500 text-gray-900 font-semibold py-3 rounded-lg shadow-lg transition-colors duration-300"
+          className="flex-1 min-w-[150px] bg-green-400 hover:bg-green-500 text-gray-900 font-semibold py-3 rounded-lg shadow-lg transition-colors duration-300 cursor-pointer"
         >
           Login as Webshop Guest
         </button>

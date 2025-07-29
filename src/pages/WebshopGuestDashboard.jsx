@@ -27,9 +27,7 @@ const WebshopGuestDashboard = () => {
   const fetchArticles = async () => {
     try {
       const response = await axios.get(`${import.meta.env.VITE_API_URL_ARTICLES}`);
-      const availableArticles = response.data.filter(article => article.quantity > 0);
-      setArticles(availableArticles);
-      setFilteredArticles(availableArticles);
+      setFilteredArticles(response.data);
     } catch (error) {
       console.error('Error fetching articles:', error);
     }
@@ -60,7 +58,7 @@ const WebshopGuestDashboard = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="text-sm px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+            className="text-sm px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition cursor-pointer"
           >
             {showFilters ? 'Hide Filters' : 'Show Filters'}
           </button>

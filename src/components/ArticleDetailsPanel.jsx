@@ -39,7 +39,7 @@ export default function ArticleDetailsPanel({ article, onClose, onUpdate }) {
     if (!confirm("Are you sure you want to delete this product?")) return;
     try {
       await axios.delete(`${API_URL}/${article.id}`);
-      onUpdate(null); // signal delete
+      onUpdate(null);
     } catch (err) {
       console.error("Error deleting:", err);
     }

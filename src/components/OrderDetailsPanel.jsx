@@ -50,12 +50,9 @@ export default function OrderDetailsPanel({ order, onClose, onUpdate }) {
     if (newStatus === previousStatus || previousStatus === "Finished") return;
 
     try {
-      // Ako je items string (npr. "2, 2, 3, 3")
-      // 1. Priprema item ID-ova
         const quantityMap = parseItemQuantities(order.items);
         console.log("Quantity map:", quantityMap);
 
-  // 3. Oduzimanje zaliha ako ide u Accepted
   if (
     (previousStatus === "Processing" && newStatus === "Accepted") ||
     (previousStatus === "Rejected" && newStatus === "Accepted")
@@ -78,7 +75,6 @@ export default function OrderDetailsPanel({ order, onClose, onUpdate }) {
     }
   }
 
-  // 4. Vraćanje zaliha ako ide iz Accepted u Rejected
   if (previousStatus === "Accepted" && newStatus === "Rejected") {
     for (const [id, returnedQuantity] of Object.entries(quantityMap)) {
       const res = await axios.get(`${import.meta.env.VITE_API_URL_ARTICLES}/${id}`);
@@ -94,7 +90,6 @@ export default function OrderDetailsPanel({ order, onClose, onUpdate }) {
     }
   }
 
-      // Ažuriranje narudžbe
       const updatedOrder = {
         id: order.id,
         items: Array.isArray(order.items)
@@ -206,8 +201,8 @@ export default function OrderDetailsPanel({ order, onClose, onUpdate }) {
           <button
             onClick={() => handleStatusChange("Accepted")}
             disabled={status === "Finished"}
-            className={`py-2 px-4 rounded text-white font-semibold 
-              ${status === "Finished" ? "bg-gray-400 cursor-not-allowed" : "bg-yellow-500 hover:bg-yellow-600"}`}
+            className={`py-2 px-4 rounded text-white font-semibold
+              ${status === "Finished" ? "bg-gray-400 cursor-not-allowed" : "bg-yellow-500 hover:bg-yellow-600 cursor-pointer"}`}
           >
             Accept
           </button>
@@ -215,8 +210,8 @@ export default function OrderDetailsPanel({ order, onClose, onUpdate }) {
           <button
             onClick={() => handleStatusChange("Rejected")}
             disabled={status === "Finished"}
-            className={`py-2 px-4 rounded text-white font-semibold 
-              ${status === "Finished" ? "bg-gray-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"}`}
+            className={`py-2 px-4 rounded text-white font-semibold  
+              ${status === "Finished" ? "bg-gray-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-700 cursor-pointer"}`}
           >
             Reject
           </button>
@@ -225,7 +220,7 @@ export default function OrderDetailsPanel({ order, onClose, onUpdate }) {
             onClick={() => handleStatusChange("Finished")}
             disabled={status !== "Accepted"}
             className={`px-4 py-2 rounded-md text-white font-semibold 
-              ${status === "Accepted" ? "bg-green-600 hover:bg-green-700" : "bg-gray-400 cursor-not-allowed"}`}
+              ${status === "Accepted" ? "bg-green-600 hover:bg-green-700 cursor-pointer" : "bg-gray-400 cursor-not-allowed"}`}
           >
             Finish
           </button>

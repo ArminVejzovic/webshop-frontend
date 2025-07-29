@@ -125,7 +125,7 @@ function AdminDashboard() {
       <div className="max-w-4xl mx-auto bg-white shadow-md rounded-2xl p-6 flex-grow w-full">
         {activeSection === 'home' && (
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">
+            <h1 className="text-2xl font-bold text-gray-800 mb-2 text-center">
               Home
             </h1>
             <p className="text-gray-600 mb-6">Welcome, admin!</p>
@@ -136,7 +136,7 @@ function AdminDashboard() {
 
         {activeSection === 'add-article' && (
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">Add New Article</h1>
+            <h1 className="text-2xl font-bold text-gray-800 mb-4 text-center">Add New Article</h1>
             <p className="text-gray-600">Product input form goes here.</p>
             <AddArticleForm />
           </div>
@@ -144,14 +144,14 @@ function AdminDashboard() {
 
         {activeSection === 'orders' && (
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">Orders</h1>
+            <h1 className="text-2xl font-bold text-gray-800 mb-4 text-center">Orders</h1>
             <OrdersList />
           </div>
         )}
 
         {activeSection === 'settings' && (
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">Settings</h1>
+            <h1 className="text-2xl font-bold text-gray-800 mb-4 text-center">Settings</h1>
             <p className="text-gray-600">Here you can change your settigs.</p>
           </div>
         )}

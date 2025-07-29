@@ -36,7 +36,7 @@ export default function HomeArticles() {
       <div className="flex justify-between items-center mb-4">
         <button
           onClick={() => setShowFilters(prev => !prev)}
-          className="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm"
+          className="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm cursor-pointer"
         >
           {showFilters ? "Hide Filters" : "Show Filters"}
         </button>

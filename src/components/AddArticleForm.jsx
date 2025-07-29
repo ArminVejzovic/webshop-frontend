@@ -38,13 +38,13 @@ const AddArticleForm = () => {
 
       navigate("/admin-dashboard", { state: { section: "home" } });
     } catch (error) {
-      console.error("Greška pri dodavanju proizvoda:", error);
+      console.error("Error adding article: ", error);
     }
   };
 
   return (
     <div className="max-w-md mx-auto p-4 bg-white rounded-lg shadow-md">
-      <h2 className="text-xl font-bold mb-4">Add New Article</h2>
+      <h2 className="text-xl font-bold mb-4">Add New Article Form</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block mb-1 font-medium">

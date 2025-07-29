@@ -55,9 +55,8 @@ export default function OrdersList() {
   return (
     <div className="px-4">
       <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
-        <h2 className="text-xl font-bold">Orders</h2>
         <button onClick={()=> setSortAsc(p=>!p)}
-          className="bg-indigo-600 text-white px-4 py-2 rounded"
+          className="bg-indigo-600 text-white px-4 py-2 rounded cursor-pointer"
         >
           Sort Date: {sortAsc ? 'ASC' : 'DESC'}
         </button>
@@ -82,11 +81,11 @@ export default function OrdersList() {
       <div className="mt-6 flex justify-center items-center gap-4">
         <button disabled={currentPage===1}
           onClick={()=>setCurrentPage(p=>p-1)}
-          className="bg-gray-200 px-3 py-1 rounded disabled:opacity-50">Prev</button>
+          className="bg-gray-200 px-3 py-1 rounded disabled:opacity-50 cursor-pointer">Prev</button>
         <span>Page {currentPage} of {totalPages}</span>
         <button disabled={currentPage===totalPages}
           onClick={()=>setCurrentPage(p=>p+1)}
-          className="bg-gray-200 px-3 py-1 rounded disabled:opacity-50">Next</button>
+          className="bg-gray-200 px-3 py-1 rounded disabled:opacity-50 cursor-pointer">Next</button>
       </div>
 
       {selectedOrder && (

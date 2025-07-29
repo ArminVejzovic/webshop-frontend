@@ -236,13 +236,13 @@ const ShoppingCart = () => {
         
                 <button
                   onClick={handleOrderSubmit}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded cursor-pointer"
                 >
                   Submit order
                 </button>
                 <button
                   onClick={handleClear}
-                  className="w-full mt-2 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded"
+                  className="w-full mt-2 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded cursor-pointer"
                 >
                   Clear chart
                 </button>
