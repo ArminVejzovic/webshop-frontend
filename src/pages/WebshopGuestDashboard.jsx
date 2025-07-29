@@ -27,8 +27,9 @@ const WebshopGuestDashboard = () => {
   const fetchArticles = async () => {
     try {
       const response = await axios.get(`${import.meta.env.VITE_API_URL_ARTICLES}`);
-      setArticles(response.data);
-      setFilteredArticles(response.data);
+      const availableArticles = response.data.filter(article => article.quantity > 0);
+      setArticles(availableArticles);
+      setFilteredArticles(availableArticles);
     } catch (error) {
       console.error('Error fetching articles:', error);
     }

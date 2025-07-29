@@ -25,13 +25,82 @@ export default function OrderDetailsPanel({ order, onClose, onUpdate }) {
     }
   }, [order.items]);
 
+  const parseItemQuantities = (items) => {
+    const itemIds = Array.isArray(items)
+      ? items.flatMap(item => {
+          const qty = parseInt(item.quantity) || 0;
+          return Array(qty).fill(item.id);
+        })
+      : typeof items === "string"
+        ? items.split(',').map(id => parseInt(id.trim(), 10))
+        : [];
+
+    const quantityMap = {};
+    itemIds.forEach(id => {
+      quantityMap[id] = (quantityMap[id] || 0) + 1;
+    });
+
+    return quantityMap;
+  };
+
   const handleStatusChange = async (newStatus) => {
+    const previousStatus = status;
+
+    if (newStatus === previousStatus || previousStatus === "Finished") return;
+
     try {
+      // Ako je items string (npr. "2, 2, 3, 3")
+      // 1. Priprema item ID-ova
+        const quantityMap = parseItemQuantities(order.items);
+        console.log("Quantity map:", quantityMap);
+
+  // 3. Oduzimanje zaliha ako ide u Accepted
+  if (
+    (previousStatus === "Processing" && newStatus === "Accepted") ||
+    (previousStatus === "Rejected" && newStatus === "Accepted")
+  ) {
+    for (const [id, requestedQuantity] of Object.entries(quantityMap)) {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL_ARTICLES}/${id}`);
+      const article = res.data;
+      const current = article.quantity ?? 0;
+
+      if (current < requestedQuantity) {
+        throw new Error(`Nema dovoljno za "${article.name}" (traženo: ${requestedQuantity}, dostupno: ${current})`);
+      }
+
+      console.log(`Smanjujem artikal ${id} sa ${current} na ${current - requestedQuantity}`);
+
+      await axios.put(`${import.meta.env.VITE_API_URL_ARTICLES}/${id}`, {
+        ...article,
+        quantity: Math.max(0, current - requestedQuantity)
+      });
+    }
+  }
+
+  // 4. Vraćanje zaliha ako ide iz Accepted u Rejected
+  if (previousStatus === "Accepted" && newStatus === "Rejected") {
+    for (const [id, returnedQuantity] of Object.entries(quantityMap)) {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL_ARTICLES}/${id}`);
+      const article = res.data;
+      const current = article.quantity ?? 0;
+
+      console.log(`Vraćam artikal ${id} sa ${current} na ${current + returnedQuantity}`);
+
+      await axios.put(`${import.meta.env.VITE_API_URL_ARTICLES}/${id}`, {
+        ...article,
+        quantity: current + returnedQuantity
+      });
+    }
+  }
+
+      // Ažuriranje narudžbe
       const updatedOrder = {
         id: order.id,
-        items: typeof order.items === "string"
-          ? order.items
-          : order.items.map(i => i.id).join(', '),
+        items: Array.isArray(order.items)
+          ? order.items.flatMap(item =>
+              Array(item.quantity).fill(item.id)
+            ).join(', ')
+          : order.items,
         status: newStatus,
         created_at: order.created_at,
         customer_email: order.customer_email,
@@ -43,12 +112,16 @@ export default function OrderDetailsPanel({ order, onClose, onUpdate }) {
       };
 
       await axios.put(`${API_URL}/${order.id}`, updatedOrder);
+
       setStatus(newStatus);
       onUpdate({ ...order, status: newStatus });
+
     } catch (err) {
-      console.error("Error updating order status:", err);
+      console.error("Greška pri promjeni statusa narudžbe:", err.message || err);
+      alert(`Greška: ${err.message}`);
     }
   };
+
 
   return (
     <div
@@ -124,19 +197,27 @@ export default function OrderDetailsPanel({ order, onClose, onUpdate }) {
         <div className="flex flex-wrap gap-2 mt-6">
           <button
             onClick={() => handleStatusChange("Accepted")}
-            className="bg-yellow-500 text-white py-2 px-4 rounded hover:bg-yellow-600"
+            disabled={status === "Finished"}
+            className={`py-2 px-4 rounded text-white font-semibold 
+              ${status === "Finished" ? "bg-gray-400 cursor-not-allowed" : "bg-yellow-500 hover:bg-yellow-600"}`}
           >
-            Accept (In prepraration)
+            Accept
           </button>
+
           <button
             onClick={() => handleStatusChange("Rejected")}
-            className="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700"
+            disabled={status === "Finished"}
+            className={`py-2 px-4 rounded text-white font-semibold 
+              ${status === "Finished" ? "bg-gray-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"}`}
           >
             Reject
           </button>
+
           <button
             onClick={() => handleStatusChange("Finished")}
-            className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
+            disabled={status !== "Accepted"}
+            className={`px-4 py-2 rounded-md text-white font-semibold 
+              ${status === "Accepted" ? "bg-green-600 hover:bg-green-700" : "bg-gray-400 cursor-not-allowed"}`}
           >
             Finish
           </button>

@@ -13,6 +13,7 @@ const ShoppingCart = () => {
     phone: '',
     address: '',
   });
+  const [errorMessage, setErrorMessage] = useState("");
 
   const updateLocalStorage = (newCart) => {
     setCart(newCart);
@@ -41,6 +42,19 @@ const ShoppingCart = () => {
   };
 
   const handleOrderSubmit = async () => {
+
+     if (
+      !form.firstName ||
+      !form.lastName ||
+      !form.email ||
+      !form.phone ||
+      !form.address
+    ) {
+      setErrorMessage("Please fill in all the fields.");
+      setTimeout(() => setErrorMessage(""), 3000);
+      return;
+    }
+
     const items = cart.flatMap(item => Array(item.quantity).fill(item.id)).join(", ");
 
     const order = {
@@ -142,42 +156,72 @@ const ShoppingCart = () => {
 
               <div className="mt-4">
                 <h3 className="font-bold mb-2">Customer Information:</h3>
+
+                <label className="block text-sm font-medium mb-1">
+                  First Name <span className="text-red-600">*</span>
+                </label>
                 <input
                   name="firstName"
                   value={form.firstName}
                   onChange={handleChange}
                   placeholder="First Name"
+                  required
                   className="border p-2 w-full mb-2"
                 />
+
+                <label className="block text-sm font-medium mb-1">
+                  Last Name <span className="text-red-600">*</span>
+                </label>
                 <input
                   name="lastName"
                   value={form.lastName}
                   onChange={handleChange}
                   placeholder="Last Name"
+                  required
                   className="border p-2 w-full mb-2"
                 />
+
+                <label className="block text-sm font-medium mb-1">
+                  Email <span className="text-red-600">*</span>
+                </label>
                 <input
                   name="email"
+                  type="email"
                   value={form.email}
                   onChange={handleChange}
                   placeholder="Email"
+                  required
                   className="border p-2 w-full mb-2"
                 />
+
+                <label className="block text-sm font-medium mb-1">
+                  Phone <span className="text-red-600">*</span>
+                </label>
                 <input
                   name="phone"
                   value={form.phone}
                   onChange={handleChange}
                   placeholder="Phone"
+                  required
                   className="border p-2 w-full mb-2"
                 />
+
+                <label className="block text-sm font-medium mb-1">
+                  Address <span className="text-red-600">*</span>
+                </label>
                 <input
                   name="address"
                   value={form.address}
                   onChange={handleChange}
                   placeholder="Address"
+                  required
                   className="border p-2 w-full mb-4"
                 />
 
+                {errorMessage && (
+                  <div className="text-red-600 font-semibold mb-3">{errorMessage}</div>
+                )}
+        
                 <button
                   onClick={handleOrderSubmit}
                   className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded"
