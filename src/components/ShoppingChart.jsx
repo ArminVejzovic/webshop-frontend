@@ -67,6 +67,7 @@ const ShoppingCart = () => {
       customer_address: form.address,
       status: "Processing",
       created_at: new Date().toLocaleString(),
+      processed_at: null
     };
 
     try {

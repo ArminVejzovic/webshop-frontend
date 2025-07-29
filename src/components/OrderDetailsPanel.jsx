@@ -51,7 +51,6 @@ export default function OrderDetailsPanel({ order, onClose, onUpdate }) {
 
     try {
         const quantityMap = parseItemQuantities(order.items);
-        console.log("Quantity map:", quantityMap);
 
   if (
     (previousStatus === "Processing" && newStatus === "Accepted") ||
@@ -63,11 +62,10 @@ export default function OrderDetailsPanel({ order, onClose, onUpdate }) {
       const current = article.quantity ?? 0;
 
       if (current < requestedQuantity) {
-        throw new Error(`Nema dovoljno za "${article.name}" (traženo: ${requestedQuantity}, dostupno: ${current})`);
+        throw new Error(`There is not enough of the article "${article.name}" (need: ${requestedQuantity}, have: ${current})`);
       }
 
-      console.log(`Smanjujem artikal ${id} sa ${current} na ${current - requestedQuantity}`);
-
+     
       await axios.put(`${import.meta.env.VITE_API_URL_ARTICLES}/${id}`, {
         ...article,
         quantity: Math.max(0, current - requestedQuantity)
@@ -151,6 +149,12 @@ export default function OrderDetailsPanel({ order, onClose, onUpdate }) {
             {order.created_at
               ? new Date(order.created_at).toLocaleString()
               : "Unknown"}
+          </p>
+          <p className="mb-2">
+            <strong>Processed At:</strong>{" "}
+            {order.processed_at
+              ? new Date(order.processed_at).toLocaleString()
+              : "Not processed yet"}
           </p>
           <p className="mb-2">
             <strong>Email:</strong>{" "}
