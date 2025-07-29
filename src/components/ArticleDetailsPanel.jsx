@@ -7,14 +7,7 @@ export default function ArticleDetailsPanel({ article, onClose, onUpdate }) {
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState({ ...article });
 
-  useEffect(() => {
-    const handleOutside = (e) => {
-      if (e.target.id === "modal-overlay") onClose();
-    };
-    window.addEventListener("click", handleOutside);
-    return () => window.removeEventListener("click", handleOutside);
-  }, [onClose]);
-
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));

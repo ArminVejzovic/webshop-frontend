@@ -145,8 +145,8 @@ const ShoppingCart = () => {
                           Total: ${(item.price * item.quantity).toFixed(2)}
                         </p>
                         <div className="flex items-center gap-2 justify-end mt-1">
-                          <button onClick={() => handleQuantity(item.id, -1)} className="px-2">−</button>
-                          <button onClick={() => handleQuantity(item.id, 1)} className="px-2">+</button>
+                          <button onClick={() => handleQuantity(item.id, -1)} className="px-2 cursor-pointer">−</button>
+                          <button onClick={() => handleQuantity(item.id, 1)} className="px-2 cursor-pointer">+</button>
                           <TrashIcon
                             className="h-5 w-5 text-red-500 cursor-pointer"
                             onClick={() => handleRemove(item.id)}
