@@ -18,6 +18,7 @@ function Login() {
   const handleLogin = async () => {
     try {
       const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+      console.log("Backend url: ", BACKEND_URL);
       const res = await axios.post(
 				`${BACKEND_URL}/login`,
 				{ username, password },
@@ -26,6 +27,7 @@ function Login() {
 						"Content-Type": "application/json"
 					}
 				}
+        
 			);
       localStorage.setItem('token', res.data.access_token);
       navigate('/admin-dashboard');
