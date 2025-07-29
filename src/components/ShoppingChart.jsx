@@ -14,6 +14,7 @@ const ShoppingCart = () => {
     address: '',
   });
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const updateLocalStorage = (newCart) => {
     setCart(newCart);
@@ -77,12 +78,19 @@ const ShoppingCart = () => {
 
       if (!res.ok) throw new Error("Error sending order.");
 
-      alert("Order successfully sent. Thank you!");
-      handleClear();
-      setIsOpen(false);
+      setSuccessMessage("Order successfully sent. Thank you!");
+      
+
+      setTimeout(() => {
+        setSuccessMessage("");
+        setIsOpen(false);
+        handleClear();
+      }, 3000);
+      
     } catch (err) {
-      console.error("Greška:", err);
-      alert("An error occurred. Please try again.");
+      console.error(err);
+      setErrorMessage("Something went wrong while sending the order.");
+      setTimeout(() => setErrorMessage(""), 3000);
     }
   };
 
@@ -220,6 +228,10 @@ const ShoppingCart = () => {
 
                 {errorMessage && (
                   <div className="text-red-600 font-semibold mb-3">{errorMessage}</div>
+                )}
+
+                {successMessage && (
+                  <div className="text-green-600 font-semibold mb-3">{successMessage}</div>
                 )}
         
                 <button
