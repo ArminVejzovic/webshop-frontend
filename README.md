@@ -24,23 +24,23 @@ Aplikacija koristi dva REST API-ja za upravljanje podacima
 
   [
   
-    {
+  { 
+  
+  "id": 23,
+  
+  "name": "Set Tanjira",
+  
+  "price": 19.99,
+  
+  "quantity": 20,
+  
+  "image_url": "https://cdn.pixabay.com/photo/2016/05/08/15/39/icon-1379313_1280.png",
+  
+  "created_at": "2025-07-26T19:32:23.853Z",
+  
+  "description": "Set Tanjira 6 komada"
     
-      "id": 23,
-      
-      "name": "Set Tanjira",
-      
-      "price": 19.99,
-      
-      "quantity": 20,
-      
-      "image_url": "https://cdn.pixabay.com/photo/2016/05/08/15/39/icon-1379313_1280.png",
-      
-      "created_at": "2025-07-26T19:32:23.853Z",
-      
-      "description": "Set Tanjira 6 komada"
-    
-    }
+  }
   
   ]
 
@@ -66,29 +66,29 @@ Polja:
   Ovaj API omogućava kreiranje i pregled narudžbi korisnika. Svaka narudžba sadrži listu artikala, status, informacije o kupcu i vremena obrade.
 
 [
-  
+ 
   {
   
-    "id": 33,
-    
-    "items": "23, 23, 24",
-    
-    "status": "Rejected",
-    
-    "created_at": "7/29/2025, 3:45:00 PM",
-    
-    "processed_at": "2025-07-29T13:47:05.179Z",
-    
-    "customer_email": "armin.vejzovic@gmail.com",
-    
-    "customer_phone": "+3234432432",
-    
-    "customer_address": "Adresa Armin 123",
-    
-    "customer_lastname": "Vejzovic",
-    
-    "customer_firstname": "Armin"
+  "id": 33,
   
+  "items": "23, 23, 24",
+  
+  "status": "Rejected",
+  
+  "created_at": "7/29/2025, 3:45:00 PM",
+  
+  "processed_at": "2025-07-29T13:47:05.179Z",
+  
+  "customer_email": "armin.vejzovic@gmail.com",
+  
+  "customer_phone": "+3234432432",
+  
+  "customer_address": "Adresa Armin 123",
+  
+  "customer_lastname": "Vejzovic",
+  
+  "customer_firstname": "Armin"
+
   },
   
 ]
