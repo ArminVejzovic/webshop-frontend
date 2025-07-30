@@ -6,6 +6,12 @@ const FiltersSidebar = ({ articles, onFilter }) => {
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearch(value);
+
+     if (value.trim() === "") {
+      onFilter(articles);
+      return;
+    }
+
     const filtered = articles.filter((a) =>
         a.name && a.name.toLowerCase().startsWith(value.toLowerCase())
     );
