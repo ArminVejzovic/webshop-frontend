@@ -13,7 +13,7 @@ const ProductCard = ({ article, onClick }) => {
         cart.push({ id: article.id, name: article.name, price: article.price, quantity: 1 });
     }
     localStorage.setItem("cart", JSON.stringify(cart));
-    window.dispatchEvent(new Event("storage"));
+    window.dispatchEvent(new Event("cartUpdated"));
   };
 
 

@@ -1,12 +1,16 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL_ORDERS;
-
 export default function OrderDetailsPanel({ order, onClose, onUpdate }) {
   const [status, setStatus] = useState(order.status);
   const [total, setTotal] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
+
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
+  useEffect(() => {
+    setStatus(order.status);
+  }, [order.status]);
 
   useEffect(() => {
     const handleOutside = (e) => {
@@ -19,29 +23,38 @@ export default function OrderDetailsPanel({ order, onClose, onUpdate }) {
   useEffect(() => {
     if (order.items && order.items.length > 0) {
       const totalPrice = order.items.reduce(
-        (sum, item) => sum + item.price * item.quantity,
+        (sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0),
         0
       );
       setTotal(totalPrice);
+    } else {
+      setTotal(0);
     }
   }, [order.items]);
 
   const parseItemQuantities = (items) => {
-    const itemIds = Array.isArray(items)
-      ? items.flatMap(item => {
-          const qty = parseInt(item.quantity) || 0;
-          return Array(qty).fill(item.id);
-        })
-      : typeof items === "string"
-        ? items.split(',').map(id => parseInt(id.trim(), 10))
-        : [];
+    // items u ovom panelu je obično array: [{id,name,quantity,price},...]
+    if (Array.isArray(items)) {
+      const map = {};
+      items.forEach((it) => {
+        const id = String(it.id);
+        const qty = parseInt(it.quantity, 10) || 0;
+        map[id] = (map[id] || 0) + qty;
+      });
+      return map;
+    }
 
-    const quantityMap = {};
-    itemIds.forEach(id => {
-      quantityMap[id] = (quantityMap[id] || 0) + 1;
-    });
+    // fallback ako ikad dođe string "23, 23, 24"
+    if (typeof items === "string") {
+      const ids = items.split(",").map(s => s.trim()).filter(Boolean);
+      const map = {};
+      ids.forEach((id) => {
+        map[id] = (map[id] || 0) + 1;
+      });
+      return map;
+    }
 
-    return quantityMap;
+    return {};
   };
 
   const handleStatusChange = async (newStatus) => {
@@ -50,73 +63,115 @@ export default function OrderDetailsPanel({ order, onClose, onUpdate }) {
     if (newStatus === previousStatus || previousStatus === "Finished") return;
 
     try {
-        const quantityMap = parseItemQuantities(order.items);
-
-  if (
-    (previousStatus === "Processing" && newStatus === "Accepted") ||
-    (previousStatus === "Rejected" && newStatus === "Accepted")
-  ) {
-    for (const [id, requestedQuantity] of Object.entries(quantityMap)) {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL_ARTICLES}/${id}`);
-      const article = res.data;
-      const current = article.quantity ?? 0;
-
-      if (current < requestedQuantity) {
-        throw new Error(`There is not enough of the article "${article.name}" (need: ${requestedQuantity}, have: ${current})`);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        window.location.href = "/login";
+        return;
       }
 
-     
-      await axios.put(`${import.meta.env.VITE_API_URL_ARTICLES}/${id}`, {
-        ...article,
-        quantity: Math.max(0, current - requestedQuantity)
-      });
-    }
-  }
+      const quantityMap = parseItemQuantities(order.items);
 
-  if (previousStatus === "Accepted" && newStatus === "Rejected") {
-    for (const [id, returnedQuantity] of Object.entries(quantityMap)) {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL_ARTICLES}/${id}`);
-      const article = res.data;
-      const current = article.quantity ?? 0;
+      // ✅ sve ide preko BACKEND rute (ne Retool)
+      // 1) Ako idemo na Accepted, provjeri i skini stock
+      if (
+        (previousStatus === "Processing" && newStatus === "Accepted") ||
+        (previousStatus === "Rejected" && newStatus === "Accepted")
+      ) {
+        for (const [id, requestedQuantity] of Object.entries(quantityMap)) {
+          const res = await axios.get(`${BACKEND_URL}/api/admin/articles`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
 
-      console.log(`Vraćam artikal ${id} sa ${current} na ${current + returnedQuantity}`);
+          const list = Array.isArray(res.data) ? res.data : [];
+          const article = list.find(a => String(a.id) === String(id));
 
-      await axios.put(`${import.meta.env.VITE_API_URL_ARTICLES}/${id}`, {
-        ...article,
-        quantity: current + returnedQuantity
-      });
-    }
-  }
+          if (!article) throw new Error(`Article ID ${id} not found`);
+
+          const current = Number(article.quantity ?? 0);
+          if (current < requestedQuantity) {
+            throw new Error(
+              `There is not enough of the article "${article.name}" (need: ${requestedQuantity}, have: ${current})`
+            );
+          }
+
+          await axios.put(
+            `${BACKEND_URL}/api/admin/articles/${id}`,
+            { ...article, quantity: Math.max(0, current - requestedQuantity) },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        }
+      }
+
+      // 2) Ako vraćaš sa Accepted -> Rejected, vrati stock
+      if (previousStatus === "Accepted" && newStatus === "Rejected") {
+        for (const [id, returnedQuantity] of Object.entries(quantityMap)) {
+          const res = await axios.get(`${BACKEND_URL}/api/admin/articles`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          const list = Array.isArray(res.data) ? res.data : [];
+          const article = list.find(a => String(a.id) === String(id));
+
+          if (!article) continue;
+
+          const current = Number(article.quantity ?? 0);
+
+          await axios.put(
+            `${BACKEND_URL}/api/admin/articles/${id}`,
+            { ...article, quantity: current + Number(returnedQuantity) },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        }
+      }
+
+      // 3) Update order status preko backend-a
+      // items mora ostati string "23, 23, 24"
+      const itemsAsString = Array.isArray(order.items)
+        ? order.items.flatMap(item => Array(Number(item.quantity || 0)).fill(item.id)).join(", ")
+        : (typeof order.items === "string" ? order.items : "");
 
       const updatedOrder = {
-        id: order.id,
-        items: Array.isArray(order.items)
-          ? order.items.flatMap(item =>
-              Array(item.quantity).fill(item.id)
-            ).join(', ')
-          : order.items,
+        ...order,
+        items: itemsAsString,
         status: newStatus,
-        created_at: order.created_at,
-        customer_email: order.customer_email,
-        customer_phone: order.customer_phone,
-        customer_address: order.customer_address,
-        customer_lastname: order.customer_lastname,
-        customer_firstname: order.customer_firstname,
-        processed_at: new Date().toISOString()
+        processed_at: new Date().toISOString(),
       };
 
-      await axios.put(`${API_URL}/${order.id}`, updatedOrder);
+      const putRes = await axios.put(
+        `${BACKEND_URL}/api/admin/orders/${order.id}`,
+        updatedOrder,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-      setStatus(newStatus);
-      onUpdate({ ...order, status: newStatus });
+      const updatedFromBackend = putRes.data;
+
+      const uiUpdated = {
+        ...order,
+        status: updatedFromBackend?.status || newStatus,
+        processed_at: updatedFromBackend?.processed_at || new Date().toISOString(),
+      };
+
+      setStatus(uiUpdated.status);
+      onUpdate(uiUpdated);
+
 
     } catch (err) {
-      console.error("Greška pri promjeni statusa narudžbe:", err.message || err);
-      setErrorMessage(err.message || "Greška pri promjeni statusa.");
+      console.error("Greška pri promjeni statusa narudžbe:", err?.message || err);
+
+      const msg =
+        err?.response?.data?.detail ||
+        err?.message ||
+        "Greška pri promjeni statusa.";
+
+      setErrorMessage(msg);
       setTimeout(() => setErrorMessage(""), 3000);
+
+      if (err?.response?.status === 401 || err?.response?.status === 403) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+      }
     }
   };
-
 
   return (
     <div
@@ -140,37 +195,29 @@ export default function OrderDetailsPanel({ order, onClose, onUpdate }) {
               ? `${order.customer_firstname} ${order.customer_lastname}`
               : "Unknown"}
           </p>
+
+          {/* ✅ prikazuj state status, ne order.status */}
           <p className="mb-2">
             <strong>Status:</strong>{" "}
-            <span className="font-semibold">{order.status || "Unknown"}</span>
+            <span className="font-semibold">{status || "Unknown"}</span>
           </p>
+
           <p className="mb-2">
             <strong>Created At:</strong>{" "}
-            {order.created_at
-              ? new Date(order.created_at).toLocaleString()
-              : "Unknown"}
+            {order.created_at ? new Date(order.created_at).toLocaleString() : "Unknown"}
           </p>
+
           <p className="mb-2">
             <strong>Processed At:</strong>{" "}
-            {order.processed_at
-              ? new Date(order.processed_at).toLocaleString()
-              : "Not processed yet"}
+            {order.processed_at ? new Date(order.processed_at).toLocaleString() : "Not processed yet"}
           </p>
-          <p className="mb-2">
-            <strong>Email:</strong>{" "}
-            {order.customer_email || "Unknown"}
-          </p>
-          <p className="mb-2">
-            <strong>Phone:</strong>{" "}
-            {order.customer_phone || "Unknown"}
-          </p>
-          <p className="mb-2">
-            <strong>Address:</strong>{" "}
-            {order.customer_address || "Unknown"}
-          </p>
+
+          <p className="mb-2"><strong>Email:</strong> {order.customer_email || "Unknown"}</p>
+          <p className="mb-2"><strong>Phone:</strong> {order.customer_phone || "Unknown"}</p>
+          <p className="mb-2"><strong>Address:</strong> {order.customer_address || "Unknown"}</p>
         </div>
 
-        {order.items && order.items.length > 0 && (
+        {Array.isArray(order.items) && order.items.length > 0 && (
           <div className="mb-4">
             <h3 className="text-lg font-semibold mb-2">Articles:</h3>
             <ul className="divide-y divide-gray-200">
@@ -180,10 +227,12 @@ export default function OrderDetailsPanel({ order, onClose, onUpdate }) {
                     <div>
                       <p className="font-semibold">{item.name}</p>
                       <p className="text-sm text-gray-600">Amount: {item.quantity}</p>
-                      <p className="text-sm text-gray-600">Price per piece: ${item.price.toFixed(2)}</p>
+                      <p className="text-sm text-gray-600">
+                        Price per piece: ${Number(item.price).toFixed(2)}
+                      </p>
                     </div>
                     <div className="text-right font-semibold">
-                      ${ (item.quantity * item.price).toFixed(2) }
+                      ${(Number(item.quantity) * Number(item.price)).toFixed(2)}
                     </div>
                   </div>
                 </li>
@@ -214,7 +263,7 @@ export default function OrderDetailsPanel({ order, onClose, onUpdate }) {
           <button
             onClick={() => handleStatusChange("Rejected")}
             disabled={status === "Finished"}
-            className={`py-2 px-4 rounded text-white font-semibold  
+            className={`py-2 px-4 rounded text-white font-semibold
               ${status === "Finished" ? "bg-gray-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-700 cursor-pointer"}`}
           >
             Reject
@@ -223,7 +272,7 @@ export default function OrderDetailsPanel({ order, onClose, onUpdate }) {
           <button
             onClick={() => handleStatusChange("Finished")}
             disabled={status !== "Accepted"}
-            className={`px-4 py-2 rounded-md text-white font-semibold 
+            className={`px-4 py-2 rounded-md text-white font-semibold
               ${status === "Accepted" ? "bg-green-600 hover:bg-green-700 cursor-pointer" : "bg-gray-400 cursor-not-allowed"}`}
           >
             Finish

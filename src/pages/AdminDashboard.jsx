@@ -11,6 +11,13 @@ function AdminDashboard() {
   const dropdownRef = useRef(null);
   const location = useLocation();
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+    }
+  }, [navigate]);
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('adminActiveSection');

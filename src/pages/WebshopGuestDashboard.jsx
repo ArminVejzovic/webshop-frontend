@@ -10,27 +10,27 @@ const WebshopGuestDashboard = () => {
   const [filteredArticles, setFilteredArticles] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState("default");
-	const [selectedArticle, setSelectedArticle] = useState(null);
-	const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedArticle, setSelectedArticle] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
-	const handleOpenDetails = (article) => {
-		setSelectedArticle(article);
-		setShowDetailsModal(true);
-	};
+  const handleOpenDetails = (article) => {
+    setSelectedArticle(article);
+    setShowDetailsModal(true);
+  };
 
-	const handleCloseDetails = () => {
-		setSelectedArticle(null);
-		setShowDetailsModal(false);
-	};
-
+  const handleCloseDetails = () => {
+    setSelectedArticle(null);
+    setShowDetailsModal(false);
+  };
 
   const fetchArticles = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL_ARTICLES}`);
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+      const response = await axios.get(`${BACKEND_URL}/api/articles`);
       setArticles(response.data);
       setFilteredArticles(response.data);
     } catch (error) {
-      console.error('Error fetching articles:', error);
+      console.error('Error fetching articles from backend:', error);
     }
   };
 
@@ -89,16 +89,19 @@ const WebshopGuestDashboard = () => {
 
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {getSortedArticles(filteredArticles).map(article => (
-              <ProductCard key={article.id} article={article} onClick={() => handleOpenDetails(article)} />
+              <ProductCard
+                key={article.id}
+                article={article}
+                onClick={() => handleOpenDetails(article)}
+              />
             ))}
           </div>
         </div>
       </div>
 
-			{showDetailsModal && (
-				<ArticleDetailsGuest article={selectedArticle} onClose={handleCloseDetails} />
-			)}			
-
+      {showDetailsModal && (
+        <ArticleDetailsGuest article={selectedArticle} onClose={handleCloseDetails} />
+      )}
     </div>
   );
 };

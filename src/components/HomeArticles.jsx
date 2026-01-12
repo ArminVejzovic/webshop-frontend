@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import ArticleDetailsPanel from "../components/ArticleDetailsPanel";
 
-const API_URL = import.meta.env.VITE_API_URL_ARTICLES;
-
 export default function HomeArticles() {
   const [articles, setArticles] = useState([]);
   const [filter, setFilter] = useState({ name: '', price: '', quantity: '' });
@@ -12,22 +10,45 @@ export default function HomeArticles() {
   const [selectedArticle, setSelectedArticle] = useState(null);
 
   useEffect(() => {
-    axios.get(API_URL)
-      .then(res => {
-        setArticles(res.data);
-      })
-      .catch(err => {
-        console.error('Error fetching articles:', err);
-      });
+    const fetchAdminArticles = async () => {
+      try {
+        const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+        const token = localStorage.getItem("token");
+
+        const res = await axios.get(`${BACKEND_URL}/api/admin/articles`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        // osiguraj da je array
+        const data = Array.isArray(res.data) ? res.data : [];
+        setArticles(data);
+      } catch (err) {
+        console.error("Error fetching admin articles:", err);
+
+        // ako je auth problem, izbaci usera na login
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          localStorage.removeItem("token");
+          // ne koristimo navigate ovdje (nije hook), samo reload na login
+          window.location.href = "/login";
+          return;
+        }
+
+        setArticles([]); // da .filter nikad ne pukne
+      }
+    };
+
+    fetchAdminArticles();
   }, []);
 
-  const filtered = articles
-    .filter(p => typeof p.name === 'string' && p.name.toLowerCase().includes(filter.name.toLowerCase()))
-    .filter(p => filter.price ? p.price.toString().includes(filter.price) : true)
-    .filter(p => filter.quantity ? p.quantity.toString().includes(filter.quantity) : true)
+  const filtered = (Array.isArray(articles) ? articles : [])
+    .filter(p => typeof p?.name === 'string' && p.name.toLowerCase().includes(filter.name.toLowerCase()))
+    .filter(p => filter.price ? String(p?.price ?? '').includes(filter.price) : true)
+    .filter(p => filter.quantity ? String(p?.quantity ?? '').includes(filter.quantity) : true)
     .sort((a, b) => {
-      const da = new Date(a.created_at);
-      const db = new Date(b.created_at);
+      const da = new Date(a?.created_at);
+      const db = new Date(b?.created_at);
       return sortAsc ? da - db : db - da;
     });
 
@@ -117,12 +138,12 @@ export default function HomeArticles() {
           onUpdate={(updated) => {
             if (updated) {
               setArticles((prev) =>
-                prev.map((p) => (p.id === updated.id ? updated : p))
+                (Array.isArray(prev) ? prev : []).map((p) => (p.id === updated.id ? updated : p))
               );
               setSelectedArticle(updated);
             } else {
               setArticles((prev) =>
-                prev.filter((p) => p.id !== selectedArticle.id)
+                (Array.isArray(prev) ? prev : []).filter((p) => p.id !== selectedArticle.id)
               );
               setSelectedArticle(null);
             }

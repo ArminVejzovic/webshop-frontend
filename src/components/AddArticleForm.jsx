@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL_ARTICLES;
-
 const AddArticleForm = () => {
   const [form, setForm] = useState({
     name: "",
@@ -22,29 +20,42 @@ const AddArticleForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+      const token = localStorage.getItem("token");
+
       const payload = {
-        name: form.name,
-        description: form.description,
+        name: form.name.trim(),
+        description: form.description.trim(),
         price: parseFloat(form.price),
-        quantity: parseInt(form.quantity),
-        image_url: form.image_url,
-        created_at: new Date().toISOString(),
+        quantity: parseInt(form.quantity, 10),
+        image_url: form.image_url.trim(),
+        created_at: new Date().toISOString(), // može ostati, nije problem
       };
 
-      await axios.post(API_URL, payload, {
-        headers: { "Content-Type": "application/json" },
+      await axios.post(`${BACKEND_URL}/api/admin/articles`, payload, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       navigate("/admin-dashboard", { state: { section: "home" } });
     } catch (error) {
       console.error("Error adding article: ", error);
+
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        localStorage.removeItem("token");
+        navigate("/login");
+      }
     }
   };
 
   return (
     <div className="max-w-md mx-auto p-4 bg-white rounded-lg shadow-md">
       <h2 className="text-xl font-bold mb-4">Add New Article Form</h2>
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block mb-1 font-medium">
@@ -59,6 +70,7 @@ const AddArticleForm = () => {
             className="w-full border rounded px-3 py-2"
           />
         </div>
+
         <div>
           <label className="block mb-1 font-medium">
             Description: <span className="text-red-600">*</span>
@@ -71,6 +83,7 @@ const AddArticleForm = () => {
             className="w-full border rounded px-3 py-2"
           />
         </div>
+
         <div>
           <label className="block mb-1 font-medium">
             Price: <span className="text-red-600">*</span>
@@ -85,6 +98,7 @@ const AddArticleForm = () => {
             className="w-full border rounded px-3 py-2"
           />
         </div>
+
         <div>
           <label className="block mb-1 font-medium">
             Quantity: <span className="text-red-600">*</span>
@@ -99,6 +113,7 @@ const AddArticleForm = () => {
             className="w-full border rounded px-3 py-2"
           />
         </div>
+
         <div>
           <label className="block mb-1 font-medium">
             Image URL: <span className="text-gray-500 text-sm">(optional)</span>

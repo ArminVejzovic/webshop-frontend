@@ -1,13 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
-
-const API_URL = import.meta.env.VITE_API_URL_ARTICLES;
 
 export default function ArticleDetailsPanel({ article, onClose, onUpdate }) {
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState({ ...article });
 
-  
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -15,26 +14,58 @@ export default function ArticleDetailsPanel({ article, onClose, onUpdate }) {
 
   const handleSave = async () => {
     try {
+      const token = localStorage.getItem("token");
+
       const payload = {
         ...form,
         price: parseFloat(form.price),
-        quantity: parseInt(form.quantity),
+        quantity: parseInt(form.quantity, 10),
       };
-      await axios.put(`${API_URL}/${article.id}`, payload);
-      onUpdate(payload);
+
+      const res = await axios.put(
+        `${BACKEND_URL}/api/admin/articles/${article.id}`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // backend vraća updateovani article (iz Retool-a)
+      onUpdate(res.data);
       setIsEditing(false);
     } catch (err) {
       console.error("Error updating:", err);
+
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+      }
     }
   };
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this product?")) return;
+
     try {
-      await axios.delete(`${API_URL}/${article.id}`);
-      onUpdate(null);
+      const token = localStorage.getItem("token");
+
+      await axios.delete(`${BACKEND_URL}/api/admin/articles/${article.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      onUpdate(null); // signal HomeArticles da izbaci item
     } catch (err) {
       console.error("Error deleting:", err);
+
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+      }
     }
   };
 
@@ -54,6 +85,7 @@ export default function ArticleDetailsPanel({ article, onClose, onUpdate }) {
         {!isEditing ? (
           <>
             <h2 className="text-2xl font-bold mb-4">{article.name}</h2>
+
             {article.image_url && (
               <img
                 src={article.image_url}
@@ -61,10 +93,18 @@ export default function ArticleDetailsPanel({ article, onClose, onUpdate }) {
                 className="w-full h-64 object-contain mb-4 bg-gray-100 rounded"
               />
             )}
-            <p className="mb-2"><strong>Description:</strong> {article.description}</p>
-            <p className="mb-2"><strong>Price:</strong> ${article.price}</p>
-            <p className="mb-2"><strong>Quantity:</strong> {article.quantity}</p>
-            <p className="mb-2"><strong>Created at:</strong>{" "}
+
+            <p className="mb-2">
+              <strong>Description:</strong> {article.description}
+            </p>
+            <p className="mb-2">
+              <strong>Price:</strong> ${article.price}
+            </p>
+            <p className="mb-2">
+              <strong>Quantity:</strong> {article.quantity}
+            </p>
+            <p className="mb-2">
+              <strong>Created at:</strong>{" "}
               {article.created_at
                 ? new Date(article.created_at).toLocaleString("en-US", {
                     year: "numeric",
@@ -98,14 +138,14 @@ export default function ArticleDetailsPanel({ article, onClose, onUpdate }) {
 
             <input
               name="name"
-              value={form.name}
+              value={form.name ?? ""}
               onChange={handleChange}
               placeholder="Name"
               className="w-full border p-2 mb-3 rounded"
             />
             <textarea
               name="description"
-              value={form.description}
+              value={form.description ?? ""}
               onChange={handleChange}
               placeholder="Description"
               className="w-full border p-2 mb-3 rounded"
@@ -114,7 +154,7 @@ export default function ArticleDetailsPanel({ article, onClose, onUpdate }) {
               name="price"
               type="number"
               step="0.01"
-              value={form.price}
+              value={form.price ?? ""}
               onChange={handleChange}
               placeholder="Price"
               className="w-full border p-2 mb-3 rounded"
@@ -122,7 +162,7 @@ export default function ArticleDetailsPanel({ article, onClose, onUpdate }) {
             <input
               name="quantity"
               type="number"
-              value={form.quantity}
+              value={form.quantity ?? ""}
               onChange={handleChange}
               placeholder="Quantity"
               className="w-full border p-2 mb-3 rounded"
@@ -130,7 +170,7 @@ export default function ArticleDetailsPanel({ article, onClose, onUpdate }) {
             <input
               name="image_url"
               type="url"
-              value={form.image_url}
+              value={form.image_url ?? ""}
               onChange={handleChange}
               placeholder="Image URL"
               className="w-full border p-2 mb-3 rounded"

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import api from "../api/client";
 
 function Login() {
   const [username, setUsername] = useState('');
@@ -19,16 +20,14 @@ function Login() {
     try {
       const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
       console.log("Backend urlll: ", BACKEND_URL);
-      const res = await axios.post(
-				`${BACKEND_URL}/login`,
-				{ username, password },
-				{
-					headers: {
-						"Content-Type": "application/json"
-					}
-				}
-        
-			);
+      const res = await api.post("/login", {
+        username: username.trim(),
+        password: password.trim(),
+      },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
       localStorage.setItem('token', res.data.access_token);
       navigate('/admin-dashboard');
     } catch (err) {
